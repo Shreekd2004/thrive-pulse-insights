@@ -1,73 +1,46 @@
-# Welcome to your Lovable project
 
-## Project info
+# AI-Powered Employee Performance Management System
 
-**URL**: https://lovable.dev/projects/6f90d8a1-2900-440d-8799-b1ccdbe5c394
+A comprehensive web application for managing employee performance, goals, feedback, and more with role-based access control and AI-powered features.
 
-## How can I edit this code?
+## Project Overview
 
-There are several ways of editing your application.
+This system serves three user roles:
 
-**Use Lovable**
+1. **HR**: Manage users, departments, goals, leaves, and salaries
+2. **Manager**: Assign goals to team members, review progress, give feedback, and conduct assessments
+3. **Employee**: View assigned goals, update progress, request leaves, and view performance reports
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/6f90d8a1-2900-440d-8799-b1ccdbe5c394) and start prompting.
+## Key Features
 
-Changes made via Lovable will be committed automatically to this repo.
+- User Authentication with Role-Based Access Control
+- Dashboard for each role with relevant metrics
+- Goal Management and Tracking
+- Feedback System with AI Sentiment Analysis
+- Performance Prediction and Reporting
+- Leave Management
+- Team and Department Management
+- AI-powered recommendations and insights
 
-**Use your preferred IDE**
+## Technical Implementation
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+- Frontend: React, TypeScript, Tailwind CSS, Shadcn UI
+- Backend: Supabase (to be integrated)
+- Authentication: Supabase Auth (to be integrated)
+- AI Features: Sentiment analysis, performance prediction, goal recommendations, attrition risk assessment
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+## Getting Started
 
-Follow these steps:
+1. Clone the repository
+2. Install dependencies: `npm install`
+3. Start the development server: `npm run dev`
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+## Demo Accounts
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+- HR Admin: hr@example.com (password: password)
+- Manager: manager@example.com (password: password)
+- Employee: employee@example.com (password: password)
 
-# Step 3: Install the necessary dependencies.
-npm i
+## Note
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/6f90d8a1-2900-440d-8799-b1ccdbe5c394) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+This is a prototype version. The application is designed to integrate with Supabase for backend functionality and will implement the full AI features once the APIs are available.
