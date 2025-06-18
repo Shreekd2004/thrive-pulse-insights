@@ -18,7 +18,7 @@ export default function EmployeesPage() {
         .from('employees')
         .select(`
           *,
-          departments(name),
+          department:departments(name),
           manager:employees!employees_manager_id_fkey(name)
         `);
       if (error) throw error;
@@ -90,7 +90,7 @@ export default function EmployeesPage() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{employee.role}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {employee.departments?.name || 'N/A'}
+                    {employee.department?.name || 'N/A'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {employee.manager?.name || 'N/A'}

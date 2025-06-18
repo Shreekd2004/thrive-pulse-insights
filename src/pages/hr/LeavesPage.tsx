@@ -18,7 +18,7 @@ export default function LeavesPage() {
         .from('leave_requests')
         .select(`
           *,
-          employees(name)
+          employee:employees!leave_requests_employee_id_fkey(name)
         `);
       if (error) throw error;
       return data;
@@ -133,7 +133,7 @@ export default function LeavesPage() {
                 <tr key={request.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">
-                      {request.employees?.name}
+                      {request.employee?.name}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 capitalize">
