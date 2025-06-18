@@ -1,23 +1,77 @@
 
+import { useState } from "react";
 import { Building, Users, Plus, Edit } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import AddDepartmentForm from "@/components/forms/AddDepartmentForm";
 
 export default function DepartmentsPage() {
-  const departments = [
-    { id: 1, name: "Engineering", description: "Software development and technical operations", employeeCount: 15, manager: "Sarah Wilson" },
-    { id: 2, name: "Product", description: "Product strategy and management", employeeCount: 8, manager: "Michael Brown" },
-    { id: 3, name: "Marketing", description: "Brand and digital marketing", employeeCount: 6, manager: "Jennifer Lee" },
-    { id: 4, name: "Sales", description: "Revenue generation and client relations", employeeCount: 10, manager: "David Smith" },
-  ];
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+
+  const { data: departments = [], refetch } = useQuery({
+    queryKey: ['departments_with_counts'],
+    queryFn: async () => {
+      const { data: depts, error: deptsError } = await supabase
+        .from('departments')
+        .select('*');
+      
+      if (deptsError) throw deptsError;
+
+      // Get employee counts for each department
+      const departmentsWithCounts = await Promise.all(
+        depts.map(async (dept) => {
+          const { count, error: countError } = await supabase
+            .from('employees')
+            .select('*', { count: 'exact', head: true })
+            .eq('department_id', dept.id);
+          
+          if (countError) throw countError;
+          
+          // Get manager for department (first manager in that department)
+          const { data: manager } = await supabase
+            .from('employees')
+            .select('name')
+            .eq('department_id', dept.id)
+            .eq('role', 'manager')
+            .limit(1)
+            .single();
+
+          return {
+            ...dept,
+            employeeCount: count || 0,
+            manager: manager?.name || 'No Manager'
+          };
+        })
+      );
+
+      return departmentsWithCounts;
+    },
+  });
+
+  const handleAddSuccess = () => {
+    refetch();
+  };
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">Departments</h1>
-        <Button className="bg-teal-600 hover:bg-teal-700">
-          <Plus className="h-4 w-4 mr-2" />
-          Add Department
-        </Button>
+        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+          <DialogTrigger asChild>
+            <Button className="bg-teal-600 hover:bg-teal-700">
+              <Plus className="h-4 w-4 mr-2" />
+              Add Department
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <AddDepartmentForm 
+              onClose={() => setIsAddDialogOpen(false)}
+              onSuccess={handleAddSuccess}
+            />
+          </DialogContent>
+        </Dialog>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

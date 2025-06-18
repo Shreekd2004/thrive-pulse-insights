@@ -1,25 +1,53 @@
 
+import { useState } from "react";
 import { Users, Search, Filter, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import AddEmployeeForm from "@/components/forms/AddEmployeeForm";
 
 export default function EmployeesPage() {
-  // Mock employee data
-  const employees = [
-    { id: 1, name: "John Smith", role: "Senior Developer", department: "Engineering", manager: "Sarah Wilson", performance: 85 },
-    { id: 2, name: "Emma Davis", role: "Product Manager", department: "Product", manager: "Michael Brown", performance: 92 },
-    { id: 3, name: "David Miller", role: "Designer", department: "Design", manager: "Sarah Wilson", performance: 78 },
-    { id: 4, name: "Lisa Johnson", role: "Marketing Specialist", department: "Marketing", manager: "Michael Brown", performance: 88 },
-  ];
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+
+  const { data: employees = [], refetch } = useQuery({
+    queryKey: ['employees'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('employees')
+        .select(`
+          *,
+          departments(name),
+          manager:employees!employees_manager_id_fkey(name)
+        `);
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const handleAddSuccess = () => {
+    refetch();
+  };
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">Employees</h1>
-        <Button className="bg-teal-600 hover:bg-teal-700">
-          <Plus className="h-4 w-4 mr-2" />
-          Add Employee
-        </Button>
+        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+          <DialogTrigger asChild>
+            <Button className="bg-teal-600 hover:bg-teal-700">
+              <Plus className="h-4 w-4 mr-2" />
+              Add Employee
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <AddEmployeeForm 
+              onClose={() => setIsAddDialogOpen(false)}
+              onSuccess={handleAddSuccess}
+            />
+          </DialogContent>
+        </Dialog>
       </div>
 
       <div className="flex gap-4 mb-6">
@@ -56,21 +84,26 @@ export default function EmployeesPage() {
                       </div>
                       <div className="ml-4">
                         <div className="text-sm font-medium text-gray-900">{employee.name}</div>
+                        <div className="text-sm text-gray-500">{employee.email}</div>
                       </div>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{employee.role}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{employee.department}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{employee.manager}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {employee.departments?.name || 'N/A'}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {employee.manager?.name || 'N/A'}
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <div className="w-16 bg-gray-200 rounded-full h-2">
                         <div 
                           className="bg-teal-600 h-2 rounded-full" 
-                          style={{ width: `${employee.performance}%` }}
+                          style={{ width: `${employee.performance || 0}%` }}
                         ></div>
                       </div>
-                      <span className="ml-2 text-sm text-gray-900">{employee.performance}%</span>
+                      <span className="ml-2 text-sm text-gray-900">{employee.performance || 0}%</span>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
