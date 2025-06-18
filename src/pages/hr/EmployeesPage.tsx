@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Users, Search, Filter, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -18,7 +17,7 @@ export default function EmployeesPage() {
         .from('employees')
         .select(`
           *,
-          department:departments(name),
+          department:departments!employees_department_id_fkey(name),
           manager:employees!employees_manager_id_fkey(name)
         `);
       if (error) throw error;
