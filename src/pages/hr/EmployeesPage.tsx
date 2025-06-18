@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Users, Search, Filter, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -89,10 +90,10 @@ export default function EmployeesPage() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{employee.role}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {employee.department?.name || 'N/A'}
+                    {Array.isArray(employee.department) ? employee.department[0]?.name : employee.department?.name || 'N/A'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {employee.manager?.name || 'N/A'}
+                    {Array.isArray(employee.manager) ? employee.manager[0]?.name : employee.manager?.name || 'N/A'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
