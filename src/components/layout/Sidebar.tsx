@@ -126,7 +126,7 @@ export default function Sidebar() {
     // Extract the path without the role prefix for matching
     const pathParts = location.pathname.split("/");
     if (pathParts.length >= 3) {
-      setCurrentPath(`/${pathParts[2]}`);
+      setCurrentPath(`/${pathParts.slice(2).join("/")}`);
     } else {
       setCurrentPath(location.pathname);
     }
