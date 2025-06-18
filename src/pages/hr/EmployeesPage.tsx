@@ -18,7 +18,7 @@ export default function EmployeesPage() {
         .from('employees')
         .select(`
           *,
-          department:departments!employees_department_id_fkey(name),
+          department:departments(name),
           manager:employees!employees_manager_id_fkey(name)
         `);
       if (error) throw error;
@@ -28,6 +28,20 @@ export default function EmployeesPage() {
 
   const handleAddSuccess = () => {
     refetch();
+  };
+
+  const getDepartmentName = (department: any) => {
+    if (Array.isArray(department)) {
+      return department[0]?.name || 'N/A';
+    }
+    return department?.name || 'N/A';
+  };
+
+  const getManagerName = (manager: any) => {
+    if (Array.isArray(manager)) {
+      return manager[0]?.name || 'N/A';
+    }
+    return manager?.name || 'N/A';
   };
 
   return (
@@ -90,10 +104,10 @@ export default function EmployeesPage() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{employee.role}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {Array.isArray(employee.department) ? employee.department[0]?.name : employee.department?.name || 'N/A'}
+                    {getDepartmentName(employee.department)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {Array.isArray(employee.manager) ? employee.manager[0]?.name : employee.manager?.name || 'N/A'}
+                    {getManagerName(employee.manager)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
