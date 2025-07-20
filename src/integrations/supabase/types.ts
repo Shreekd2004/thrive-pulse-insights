@@ -48,6 +48,7 @@ export type Database = {
           manager_id: string | null
           name: string
           performance: number | null
+          profile_id: string | null
           role: string
           salary: number | null
           status: string | null
@@ -63,6 +64,7 @@ export type Database = {
           manager_id?: string | null
           name: string
           performance?: number | null
+          profile_id?: string | null
           role: string
           salary?: number | null
           status?: string | null
@@ -78,6 +80,7 @@ export type Database = {
           manager_id?: string | null
           name?: string
           performance?: number | null
+          profile_id?: string | null
           role?: string
           salary?: number | null
           status?: string | null
@@ -97,6 +100,13 @@ export type Database = {
             columns: ["manager_id"]
             isOneToOne: false
             referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employees_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -164,15 +174,48 @@ export type Database = {
           },
         ]
       }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          full_name: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          full_name?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_current_user_role: {
+        Args: Record<PropertyKey, never>
+        Returns: Database["public"]["Enums"]["app_role"]
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "hr" | "manager" | "employee"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -299,6 +342,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["hr", "manager", "employee"],
+    },
   },
 } as const

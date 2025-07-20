@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function SettingsPage() {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
 
   return (
     <div className="space-y-6">
@@ -26,13 +26,13 @@ export default function SettingsPage() {
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Full Name
                   </label>
-                  <Input defaultValue={user?.name} />
+                  <Input defaultValue={profile?.full_name} />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Email
                   </label>
-                  <Input defaultValue={user?.email} />
+                  <Input defaultValue={profile?.email} />
                 </div>
               </div>
               
@@ -41,13 +41,13 @@ export default function SettingsPage() {
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Department
                   </label>
-                  <Input defaultValue={user?.department} />
+                  <Input defaultValue="N/A" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Role
                   </label>
-                  <Input defaultValue={user?.role?.toUpperCase()} disabled />
+                  <Input defaultValue={profile?.role?.toUpperCase()} disabled />
                 </div>
               </div>
               
@@ -175,7 +175,7 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          {user?.role === "hr" && (
+          {profile?.role === "hr" && (
             <div className="bg-white p-6 rounded-lg shadow border">
               <h2 className="text-lg font-semibold mb-4">System Administration</h2>
               
