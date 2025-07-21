@@ -26,14 +26,16 @@ export default function CreateUserForm({ onSuccess }: CreateUserFormProps) {
     setIsLoading(true);
 
     try {
-      // First, create the auth user
-      const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+      // Create the auth user using regular signup
+      const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
-        email_confirm: true,
-        user_metadata: {
-          full_name: formData.fullName,
-          role: formData.role
+        options: {
+          emailRedirectTo: `${window.location.origin}/`,
+          data: {
+            full_name: formData.fullName,
+            role: formData.role
+          }
         }
       });
 
