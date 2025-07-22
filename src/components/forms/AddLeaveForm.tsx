@@ -48,26 +48,53 @@ export default function AddLeaveForm({ onClose, onSuccess }: AddLeaveFormProps) 
     e.preventDefault();
     setIsSubmitting(true);
 
+    // Log form data for debugging
+    console.log('Submitting form data:', formData);
+
+    // Validate required fields
+    if (!formData.employee_id) {
+      console.error('Employee ID is required');
+      alert('Please select an employee');
+      setIsSubmitting(false);
+      return;
+    }
+
+    if (!formData.type) {
+      console.error('Leave type is required');
+      alert('Please select a leave type');
+      setIsSubmitting(false);
+      return;
+    }
+
     try {
       const days = calculateDays(formData.start_date, formData.end_date);
       
+      const requestData = {
+        employee_id: formData.employee_id,
+        type: formData.type,
+        start_date: formData.start_date,
+        end_date: formData.end_date,
+        days: days,
+        reason: formData.reason,
+      };
+
+      console.log('Sending request to database:', requestData);
+      
       const { error } = await supabase
         .from('leave_requests')
-        .insert([{
-          employee_id: formData.employee_id,
-          type: formData.type,
-          start_date: formData.start_date,
-          end_date: formData.end_date,
-          days: days,
-          reason: formData.reason,
-        }]);
+        .insert([requestData]);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Database error:', error);
+        throw error;
+      }
       
+      console.log('Leave request submitted successfully');
       onSuccess();
       onClose();
     } catch (error) {
       console.error('Error adding leave request:', error);
+      alert('Failed to submit leave request. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -87,13 +114,22 @@ export default function AddLeaveForm({ onClose, onSuccess }: AddLeaveFormProps) 
                 <SelectValue placeholder="Select employee" />
               </SelectTrigger>
               <SelectContent>
-                {employees.map((employee) => (
-                  <SelectItem key={employee.id} value={employee.id}>
-                    {employee.name}
-                  </SelectItem>
-                ))}
+                {employees.length === 0 ? (
+                  <SelectItem value="" disabled>No employees found</SelectItem>
+                ) : (
+                  employees.map((employee) => (
+                    <SelectItem key={employee.id} value={employee.id}>
+                      {employee.name}
+                    </SelectItem>
+                  ))
+                )}
               </SelectContent>
             </Select>
+            {employees.length === 0 && (
+              <p className="text-sm text-red-500 mt-1">
+                No employees available. Please add employees first.
+              </p>
+            )}
           </div>
           
           <div>
