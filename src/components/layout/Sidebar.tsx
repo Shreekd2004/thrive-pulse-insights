@@ -118,7 +118,7 @@ const navItems: NavItem[] = [
 ];
 
 export default function Sidebar() {
-  const { user, hasRole } = useAuth();
+  const { user, profile, hasRole } = useAuth();
   const location = useLocation();
   const [currentPath, setCurrentPath] = useState("");
 
@@ -132,9 +132,9 @@ export default function Sidebar() {
     }
   }, [location.pathname]);
 
-  if (!user) return null;
+  if (!user || !profile) return null;
   
-  const role = user.role;
+  const role = profile.role;
 
   return (
     <div className="h-full w-64 bg-sidebar flex flex-col">
