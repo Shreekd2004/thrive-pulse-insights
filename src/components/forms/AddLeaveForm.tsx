@@ -111,18 +111,14 @@ export default function AddLeaveForm({ onClose, onSuccess }: AddLeaveFormProps) 
             <Label htmlFor="employee">Employee</Label>
             <Select onValueChange={(value) => setFormData(prev => ({ ...prev, employee_id: value }))}>
               <SelectTrigger>
-                <SelectValue placeholder="Select employee" />
+                <SelectValue placeholder={employees.length === 0 ? "No employees available" : "Select employee"} />
               </SelectTrigger>
               <SelectContent>
-                {employees.length === 0 ? (
-                  <SelectItem value="" disabled>No employees found</SelectItem>
-                ) : (
-                  employees.map((employee) => (
-                    <SelectItem key={employee.id} value={employee.id}>
-                      {employee.name}
-                    </SelectItem>
-                  ))
-                )}
+                {employees.map((employee) => (
+                  <SelectItem key={employee.id} value={employee.id}>
+                    {employee.name}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
             {employees.length === 0 && (
