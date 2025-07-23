@@ -111,6 +111,120 @@ export type Database = {
           },
         ]
       }
+      feedback: {
+        Row: {
+          category: string | null
+          created_at: string
+          feedback_text: string
+          from_user: string
+          id: string
+          is_anonymous: boolean | null
+          rating: number | null
+          to_user: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          feedback_text: string
+          from_user: string
+          id?: string
+          is_anonymous?: boolean | null
+          rating?: number | null
+          to_user: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          feedback_text?: string
+          from_user?: string
+          id?: string
+          is_anonymous?: boolean | null
+          rating?: number | null
+          to_user?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feedback_from_user_fkey"
+            columns: ["from_user"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "feedback_to_user_fkey"
+            columns: ["to_user"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      goals: {
+        Row: {
+          assigned_to: string | null
+          created_at: string
+          created_by: string | null
+          current_value: number | null
+          description: string | null
+          end_date: string | null
+          id: string
+          progress: number | null
+          start_date: string | null
+          status: string | null
+          target_value: number | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          created_at?: string
+          created_by?: string | null
+          current_value?: number | null
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          progress?: number | null
+          start_date?: string | null
+          status?: string | null
+          target_value?: number | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string | null
+          created_at?: string
+          created_by?: string | null
+          current_value?: number | null
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          progress?: number | null
+          start_date?: string | null
+          status?: string | null
+          target_value?: number | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "goals_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "goals_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       leave_requests: {
         Row: {
           approved_by: string | null

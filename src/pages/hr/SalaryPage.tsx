@@ -2,17 +2,52 @@
 import { DollarSign, Search, Edit, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function SalaryPage() {
-  const salaryData = [
-    { id: 1, employee: "John Smith", position: "Senior Developer", department: "Engineering", currentSalary: 85000, lastReview: "2025-01-15", nextReview: "2026-01-15" },
-    { id: 2, employee: "Emma Davis", position: "Product Manager", department: "Product", currentSalary: 95000, lastReview: "2025-02-01", nextReview: "2026-02-01" },
-    { id: 3, employee: "David Miller", position: "Designer", department: "Design", currentSalary: 70000, lastReview: "2024-12-10", nextReview: "2025-12-10" },
-    { id: 4, employee: "Lisa Johnson", position: "Marketing Specialist", department: "Marketing", currentSalary: 65000, lastReview: "2025-03-01", nextReview: "2026-03-01" },
-  ];
+  const [editingEmployee, setEditingEmployee] = useState<string | null>(null);
+  const [newSalary, setNewSalary] = useState<string>("");
 
-  const totalPayroll = salaryData.reduce((sum, emp) => sum + emp.currentSalary, 0);
-  const avgSalary = totalPayroll / salaryData.length;
+  const { data: employees = [], refetch } = useQuery({
+    queryKey: ['employees-salary'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('employees')
+        .select(`
+          id,
+          name,
+          role,
+          salary,
+          hire_date,
+          departments!inner(name)
+        `);
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  const totalPayroll = employees.reduce((sum, emp) => sum + (emp.salary || 0), 0);
+  const avgSalary = employees.length > 0 ? totalPayroll / employees.length : 0;
+
+  const handleSalaryUpdate = async (employeeId: string) => {
+    try {
+      const { error } = await supabase
+        .from('employees')
+        .update({ salary: parseFloat(newSalary) })
+        .eq('id', employeeId);
+
+      if (error) throw error;
+      
+      setEditingEmployee(null);
+      setNewSalary("");
+      refetch();
+    } catch (error) {
+      console.error('Error updating salary:', error);
+      alert('Failed to update salary');
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -47,7 +82,7 @@ export default function SalaryPage() {
             <DollarSign className="h-8 w-8 text-purple-600" />
             <div className="ml-3">
               <p className="text-sm text-gray-600">Employees</p>
-              <p className="text-2xl font-semibold">{salaryData.length}</p>
+              <p className="text-2xl font-semibold">{employees.length}</p>
             </div>
           </div>
         </div>
@@ -75,7 +110,7 @@ export default function SalaryPage() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {salaryData.map((emp) => (
+              {employees.length > 0 ? employees.map((emp) => (
                 <tr key={emp.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
@@ -83,25 +118,72 @@ export default function SalaryPage() {
                         <DollarSign className="h-5 w-5 text-teal-600" />
                       </div>
                       <div className="ml-4">
-                        <div className="text-sm font-medium text-gray-900">{emp.employee}</div>
+                        <div className="text-sm font-medium text-gray-900">{emp.name}</div>
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{emp.position}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{emp.department}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{emp.role}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{emp.departments?.name || 'N/A'}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    ${emp.currentSalary.toLocaleString()}
+                    {editingEmployee === emp.id ? (
+                      <Input
+                        type="number"
+                        value={newSalary}
+                        onChange={(e) => setNewSalary(e.target.value)}
+                        className="w-24"
+                        placeholder="Salary"
+                      />
+                    ) : (
+                      `$${emp.salary?.toLocaleString() || 'Not set'}`
+                    )}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{emp.lastReview}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{emp.nextReview}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{emp.hire_date || 'N/A'}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {emp.hire_date ? new Date(new Date(emp.hire_date).getTime() + 365*24*60*60*1000).toISOString().split('T')[0] : 'N/A'}
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <Button variant="outline" size="sm">
-                      <Edit className="h-4 w-4 mr-1" />
-                      Update
-                    </Button>
+                    {editingEmployee === emp.id ? (
+                      <div className="flex gap-2">
+                        <Button 
+                          size="sm" 
+                          onClick={() => handleSalaryUpdate(emp.id)}
+                          disabled={!newSalary}
+                        >
+                          Save
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => {
+                            setEditingEmployee(null);
+                            setNewSalary("");
+                          }}
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    ) : (
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => {
+                          setEditingEmployee(emp.id);
+                          setNewSalary(emp.salary?.toString() || "");
+                        }}
+                      >
+                        <Edit className="h-4 w-4 mr-1" />
+                        Update
+                      </Button>
+                    )}
                   </td>
                 </tr>
-              ))}
+              )) : (
+                <tr>
+                  <td colSpan={7} className="px-6 py-4 text-center text-gray-500">
+                    No employees found. Add employees first.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>

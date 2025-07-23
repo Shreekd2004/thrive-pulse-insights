@@ -31,7 +31,7 @@ export default function AddLeaveForm({ onClose, onSuccess }: AddLeaveFormProps) 
         .from('employees')
         .select('id, name');
       if (error) throw error;
-      return data;
+      return data || [];
     },
   });
 
@@ -46,6 +46,17 @@ export default function AddLeaveForm({ onClose, onSuccess }: AddLeaveFormProps) 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!formData.employee_id) {
+      alert('Please select an employee');
+      return;
+    }
+    
+    if (!formData.type) {
+      alert('Please select a leave type');
+      return;
+    }
+    
     setIsSubmitting(true);
 
     try {
@@ -68,6 +79,7 @@ export default function AddLeaveForm({ onClose, onSuccess }: AddLeaveFormProps) 
       onClose();
     } catch (error) {
       console.error('Error adding leave request:', error);
+      alert('Failed to submit leave request. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -87,11 +99,17 @@ export default function AddLeaveForm({ onClose, onSuccess }: AddLeaveFormProps) 
                 <SelectValue placeholder="Select employee" />
               </SelectTrigger>
               <SelectContent>
-                {employees.map((employee) => (
-                  <SelectItem key={employee.id} value={employee.id}>
-                    {employee.name}
+                {employees.length > 0 ? (
+                  employees.map((employee) => (
+                    <SelectItem key={employee.id} value={employee.id}>
+                      {employee.name}
+                    </SelectItem>
+                  ))
+                ) : (
+                  <SelectItem value="no-employees" disabled>
+                    No employees available
                   </SelectItem>
-                ))}
+                )}
               </SelectContent>
             </Select>
           </div>

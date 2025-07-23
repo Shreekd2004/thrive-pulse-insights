@@ -2,29 +2,56 @@
 import { Target, Plus, Clock, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import AddGoalForm from "@/components/forms/AddGoalForm";
 
 export default function GoalsPage() {
-  const { user } = useAuth();
+  const { profile } = useAuth();
+  const [showAddGoal, setShowAddGoal] = useState(false);
   
-  const goals = [
-    { id: 1, title: "Increase Customer Satisfaction", description: "Improve customer satisfaction score to 90%", deadline: "2025-12-31", progress: 75, assignedBy: "HR", status: "active" },
-    { id: 2, title: "Complete Product Launch", description: "Launch new product feature successfully", deadline: "2025-08-15", progress: 45, assignedBy: "Sarah Wilson", status: "active" },
-    { id: 3, title: "Team Training Program", description: "Complete leadership training for all managers", deadline: "2025-09-30", progress: 30, assignedBy: "HR", status: "active" },
-    { id: 4, title: "Cost Reduction Initiative", description: "Reduce operational costs by 15%", deadline: "2025-11-30", progress: 90, assignedBy: "HR", status: "completed" },
-  ];
+  const { data: goals = [], refetch } = useQuery({
+    queryKey: ['goals'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('goals')
+        .select(`
+          *,
+          created_by_profile:profiles!goals_created_by_fkey(full_name),
+          assigned_to_profile:profiles!goals_assigned_to_fkey(full_name)
+        `);
+      if (error) throw error;
+      return data || [];
+    },
+  });
 
-  const isHR = user?.role === "hr";
-  const isManager = user?.role === "manager";
+  const isHR = profile?.role === "hr";
+  const isManager = profile?.role === "manager";
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">Goals Management</h1>
-        {(isHR || isManager) && (
-          <Button className="bg-teal-600 hover:bg-teal-700">
-            <Plus className="h-4 w-4 mr-2" />
-            {isHR ? "Create Organization Goal" : "Assign Goal"}
-          </Button>
+        {isHR && (
+          <Dialog open={showAddGoal} onOpenChange={setShowAddGoal}>
+            <DialogTrigger asChild>
+              <Button className="bg-teal-600 hover:bg-teal-700">
+                <Plus className="h-4 w-4 mr-2" />
+                Create Goal
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <AddGoalForm 
+                onClose={() => setShowAddGoal(false)} 
+                onSuccess={() => {
+                  refetch();
+                  setShowAddGoal(false);
+                }} 
+              />
+            </DialogContent>
+          </Dialog>
         )}
       </div>
 
@@ -86,16 +113,16 @@ export default function GoalsPage() {
               </div>
               
               <div className="flex justify-between text-sm text-gray-600">
-                <span>Assigned by: {goal.assignedBy}</span>
-                <span>Due: {goal.deadline}</span>
+                <span>Created by: {goal.created_by_profile?.full_name || 'N/A'}</span>
+                <span>Due: {goal.end_date || 'No deadline'}</span>
               </div>
             </div>
             
             <div className="mt-4 flex gap-2">
-              {user?.role === "employee" && goal.status === "active" && (
+              {profile?.role === "employee" && goal.status === "active" && (
                 <Button variant="outline" size="sm">Update Progress</Button>
               )}
-              {(isHR || isManager) && (
+              {isHR && (
                 <Button variant="outline" size="sm">Edit Goal</Button>
               )}
               <Button variant="outline" size="sm">View Details</Button>
