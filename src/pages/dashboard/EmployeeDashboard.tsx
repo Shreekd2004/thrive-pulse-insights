@@ -2,9 +2,54 @@
 import { Target, Award, MessageSquare, Bell } from "lucide-react";
 import StatCard from "@/components/dashboard/StatCard";
 import { useAuth } from "@/contexts/AuthContext";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function EmployeeDashboard() {
-  const { user } = useAuth();
+  const { profile } = useAuth();
+
+  const { data: goals = [] } = useQuery({
+    queryKey: ['employee-goals-dashboard'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('goals')
+        .select('*')
+        .eq('assigned_to', profile?.id);
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!profile?.id,
+  });
+
+  const { data: feedback = [] } = useQuery({
+    queryKey: ['employee-feedback-dashboard'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('feedback')
+        .select('*')
+        .eq('to_user', profile?.id);
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!profile?.id,
+  });
+
+  const { data: employee } = useQuery({
+    queryKey: ['employee-profile-dashboard'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('employees')
+        .select('*')
+        .eq('profile_id', profile?.id)
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!profile?.id,
+  });
+
+  const activeGoals = goals.filter(g => g.status === 'active');
+  const recentFeedback = feedback.filter(f => new Date(f.created_at) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000));
 
   return (
     <div className="space-y-6">
@@ -13,19 +58,19 @@ export default function EmployeeDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <StatCard
           title="Active Goals"
-          value={5}
+          value={activeGoals.length}
           icon={<Target size={24} className="text-white" />}
           color="teal"
         />
         <StatCard
           title="Performance Score"
-          value="82%"
+          value={`${employee?.performance || 0}%`}
           icon={<Award size={24} className="text-white" />}
           color="gold"
         />
         <StatCard
           title="Recent Feedback"
-          value={3}
+          value={recentFeedback.length}
           icon={<MessageSquare size={24} className="text-white" />}
           color="green"
         />
@@ -35,16 +80,10 @@ export default function EmployeeDashboard() {
         <div className="bg-white p-6 rounded-md shadow-sm">
           <h2 className="text-xl font-semibold mb-4">My Goals</h2>
           <div className="space-y-4">
-            {[
-              { name: "Complete project documentation", progress: 70, deadline: "May 30, 2025" },
-              { name: "Learn new framework", progress: 45, deadline: "June 15, 2025" },
-              { name: "Improve code quality", progress: 90, deadline: "May 20, 2025" },
-              { name: "Client presentation preparation", progress: 30, deadline: "June 5, 2025" },
-              { name: "Team collaboration improvement", progress: 65, deadline: "Ongoing" },
-            ].map((goal, i) => (
-              <div key={i} className="space-y-1">
+            {goals.length > 0 ? goals.slice(0, 5).map((goal) => (
+              <div key={goal.id} className="space-y-1">
                 <div className="flex justify-between">
-                  <span>{goal.name}</span>
+                  <span>{goal.title}</span>
                   <span className="font-medium">{goal.progress}%</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
@@ -53,9 +92,13 @@ export default function EmployeeDashboard() {
                     style={{ width: `${goal.progress}%` }}
                   ></div>
                 </div>
-                <div className="text-xs text-gray-500">Deadline: {goal.deadline}</div>
+                <div className="text-xs text-gray-500">
+                  Deadline: {goal.end_date || 'No deadline'}
+                </div>
               </div>
-            ))}
+            )) : (
+              <p className="text-gray-500">No goals assigned</p>
+            )}
           </div>
         </div>
 

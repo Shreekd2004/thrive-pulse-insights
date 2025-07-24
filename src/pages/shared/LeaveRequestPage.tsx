@@ -2,21 +2,32 @@
 import { Calendar, Plus, Clock, CheckCircle, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import AddLeaveForm from "@/components/forms/AddLeaveForm";
+import { useState } from "react";
 
 export default function LeaveRequestPage() {
-  const { user } = useAuth();
+  const { profile } = useAuth();
+  const [showAddLeave, setShowAddLeave] = useState(false);
   
-  const leaveRequests = [
-    { id: 1, type: "Annual Leave", startDate: "2025-06-25", endDate: "2025-06-30", days: 5, status: "pending", reason: "Family vacation", submittedDate: "2025-06-15" },
-    { id: 2, type: "Sick Leave", startDate: "2025-06-10", endDate: "2025-06-12", days: 2, status: "approved", reason: "Medical appointment", submittedDate: "2025-06-08" },
-    { id: 3, type: "Personal Leave", startDate: "2025-05-20", endDate: "2025-05-21", days: 2, status: "rejected", reason: "Personal matters", submittedDate: "2025-05-15" },
-  ];
+  const { data: leaveRequests = [], refetch } = useQuery({
+    queryKey: ['leave-requests'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('leave_requests')
+        .select('*');
+      if (error) throw error;
+      return data || [];
+    },
+  });
 
   const leaveBalance = {
-    annual: 15,
+    annual: 20,
     sick: 10,
     personal: 5,
-    used: 9
+    used: leaveRequests.filter(req => req.status === 'approved').reduce((sum, req) => sum + req.days, 0)
   };
 
   const getStatusIcon = (status: string) => {
@@ -41,10 +52,23 @@ export default function LeaveRequestPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">Leave Request</h1>
-        <Button className="bg-teal-600 hover:bg-teal-700">
-          <Plus className="h-4 w-4 mr-2" />
-          New Leave Request
-        </Button>
+        <Dialog open={showAddLeave} onOpenChange={setShowAddLeave}>
+          <DialogTrigger asChild>
+            <Button className="bg-teal-600 hover:bg-teal-700">
+              <Plus className="h-4 w-4 mr-2" />
+              New Leave Request
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <AddLeaveForm 
+              onClose={() => setShowAddLeave(false)} 
+              onSuccess={() => {
+                refetch();
+                setShowAddLeave(false);
+              }} 
+            />
+          </DialogContent>
+        </Dialog>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
@@ -134,7 +158,7 @@ export default function LeaveRequestPage() {
                       {request.type}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {request.startDate} to {request.endDate}
+                      {request.start_date} to {request.end_date}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{request.days}</td>
                     <td className="px-6 py-4 text-sm text-gray-900">{request.reason}</td>
@@ -144,7 +168,7 @@ export default function LeaveRequestPage() {
                         <span className="ml-1 capitalize">{request.status}</span>
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{request.submittedDate}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{request.submitted_date}</td>
                   </tr>
                 ))}
               </tbody>

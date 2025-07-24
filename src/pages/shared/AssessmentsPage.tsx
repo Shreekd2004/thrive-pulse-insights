@@ -1,52 +1,31 @@
-
-import { FileText, Star, Calendar, User } from "lucide-react";
+import { Target, CheckCircle, FileText, Clock, Users, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import AddAssessmentForm from "@/components/forms/AddAssessmentForm";
+import { useState } from "react";
 
 export default function AssessmentsPage() {
-  const { user } = useAuth();
-  
-  const assessments = [
-    { 
-      id: 1, 
-      title: "Q2 Performance Review", 
-      type: "Quarterly Review", 
-      evaluator: "Sarah Wilson", 
-      date: "2025-06-01", 
-      status: "completed", 
-      score: 87,
-      feedback: "Excellent technical skills and team collaboration. Continue focusing on leadership development."
-    },
-    { 
-      id: 2, 
-      title: "Project Alpha Evaluation", 
-      type: "Project Assessment", 
-      evaluator: "Michael Brown", 
-      date: "2025-05-15", 
-      status: "completed", 
-      score: 92,
-      feedback: "Outstanding project delivery. Great attention to detail and problem-solving approach."
-    },
-    { 
-      id: 3, 
-      title: "Annual Performance Assessment", 
-      type: "Annual Review", 
-      evaluator: "HR Team", 
-      date: "2025-07-01", 
-      status: "scheduled", 
-      score: null,
-      feedback: null
-    },
-  ];
+  const { profile } = useAuth();
+  const isManager = profile?.role === "manager";
+  const isHR = profile?.role === "hr";
+  const [showAddAssessment, setShowAddAssessment] = useState(false);
 
-  const teamAssessments = [
-    { id: 1, employee: "John Smith", title: "Q2 Performance Review", dueDate: "2025-06-30", status: "pending" },
-    { id: 2, employee: "Emma Davis", title: "Leadership Assessment", dueDate: "2025-06-25", status: "completed" },
-    { id: 3, employee: "David Miller", title: "Design Portfolio Review", dueDate: "2025-07-05", status: "pending" },
-  ];
+  const { data: assessments = [], refetch } = useQuery({
+    queryKey: ['assessments'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('assessments')
+        .select('*');
+      if (error) throw error;
+      return data || [];
+    },
+  });
 
-  const isManager = user?.role === "manager";
-  const isEmployee = user?.role === "employee";
+  const myAssessments = isHR ? assessments : assessments.filter(a => a.employee_id === profile?.id || a.evaluator_id === profile?.id);
+  const teamAssessments = isManager ? assessments.filter(a => a.evaluator_id === profile?.id) : [];
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -60,92 +39,104 @@ export default function AssessmentsPage() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">
-          {isManager ? "Team Assessments" : "My Assessments"}
-        </h1>
-        {isManager && (
-          <Button className="bg-teal-600 hover:bg-teal-700">
-            <FileText className="h-4 w-4 mr-2" />
-            Create Assessment
-          </Button>
+        <h1 className="text-2xl font-bold">Assessments</h1>
+        {isHR && (
+          <Dialog open={showAddAssessment} onOpenChange={setShowAddAssessment}>
+            <DialogTrigger asChild>
+              <Button className="bg-teal-600 hover:bg-teal-700">
+                <Plus className="h-4 w-4 mr-2" />
+                Create Assessment
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <AddAssessmentForm 
+                onClose={() => setShowAddAssessment(false)} 
+                onSuccess={() => {
+                  refetch();
+                  setShowAddAssessment(false);
+                }} 
+              />
+            </DialogContent>
+          </Dialog>
         )}
       </div>
 
-      {isEmployee && (
-        <>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <div className="bg-white p-4 rounded-lg shadow border">
-              <div className="flex items-center">
-                <Star className="h-8 w-8 text-yellow-600" />
-                <div className="ml-3">
-                  <p className="text-sm text-gray-600">Average Score</p>
-                  <p className="text-2xl font-semibold">
-                    {assessments.filter(a => a.score).reduce((sum, a) => sum + a.score!, 0) / assessments.filter(a => a.score).length}%
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div className="bg-white p-4 rounded-lg shadow border">
-              <div className="flex items-center">
-                <FileText className="h-8 w-8 text-blue-600" />
-                <div className="ml-3">
-                  <p className="text-sm text-gray-600">Completed</p>
-                  <p className="text-2xl font-semibold">{assessments.filter(a => a.status === "completed").length}</p>
-                </div>
-              </div>
-            </div>
-            <div className="bg-white p-4 rounded-lg shadow border">
-              <div className="flex items-center">
-                <Calendar className="h-8 w-8 text-purple-600" />
-                <div className="ml-3">
-                  <p className="text-sm text-gray-600">Upcoming</p>
-                  <p className="text-2xl font-semibold">{assessments.filter(a => a.status === "scheduled").length}</p>
-                </div>
-              </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div className="bg-white p-4 rounded-lg shadow border">
+          <div className="flex items-center">
+            <Target className="h-8 w-8 text-yellow-600" />
+            <div className="ml-3">
+              <p className="text-sm text-gray-600">Average Score</p>
+              <p className="text-2xl font-semibold">
+                {myAssessments.filter(a => a.score).length > 0 
+                  ? Math.round(myAssessments.filter(a => a.score).reduce((sum, a) => sum + a.score!, 0) / myAssessments.filter(a => a.score).length)
+                  : 0}%
+              </p>
             </div>
           </div>
+        </div>
+        <div className="bg-white p-4 rounded-lg shadow border">
+          <div className="flex items-center">
+            <CheckCircle className="h-8 w-8 text-green-600" />
+            <div className="ml-3">
+              <p className="text-sm text-gray-600">Completed</p>
+              <p className="text-2xl font-semibold">{myAssessments.filter(a => a.status === "completed").length}</p>
+            </div>
+          </div>
+        </div>
+        <div className="bg-white p-4 rounded-lg shadow border">
+          <div className="flex items-center">
+            <Clock className="h-8 w-8 text-blue-600" />
+            <div className="ml-3">
+              <p className="text-sm text-gray-600">Pending</p>
+              <p className="text-2xl font-semibold">{myAssessments.filter(a => a.status === "pending").length}</p>
+            </div>
+          </div>
+        </div>
+      </div>
 
-          <div className="space-y-4">
-            <h2 className="text-xl font-semibold">Assessment History</h2>
-            {assessments.map((assessment) => (
-              <div key={assessment.id} className="bg-white p-6 rounded-lg shadow border">
-                <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-900">{assessment.title}</h3>
-                    <p className="text-sm text-gray-600">{assessment.type}</p>
-                  </div>
-                  <span className={`px-3 py-1 text-xs rounded-full ${getStatusColor(assessment.status)}`}>
-                    {assessment.status}
-                  </span>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                  <div className="flex items-center">
-                    <User className="h-4 w-4 text-gray-500 mr-2" />
-                    <span className="text-sm text-gray-600">Evaluator: {assessment.evaluator}</span>
-                  </div>
-                  <div className="flex items-center">
-                    <Calendar className="h-4 w-4 text-gray-500 mr-2" />
-                    <span className="text-sm text-gray-600">Date: {assessment.date}</span>
-                  </div>
-                  {assessment.score && (
-                    <div className="flex items-center">
-                      <Star className="h-4 w-4 text-yellow-500 mr-2" />
-                      <span className="text-sm font-medium">Score: {assessment.score}%</span>
-                    </div>
-                  )}
-                </div>
-                
-                {assessment.feedback && (
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <p className="text-sm text-gray-700">{assessment.feedback}</p>
-                  </div>
-                )}
+      <div className="space-y-4">
+        <h2 className="text-xl font-semibold">Assessment History</h2>
+        {myAssessments.length > 0 ? myAssessments.map((assessment) => (
+          <div key={assessment.id} className="bg-white p-6 rounded-lg shadow border">
+            <div className="flex justify-between items-start mb-4">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">{assessment.title}</h3>
+                <p className="text-sm text-gray-600">{assessment.type}</p>
               </div>
-            ))}
+              <span className={`px-3 py-1 text-xs rounded-full ${getStatusColor(assessment.status)}`}>
+                {assessment.status}
+              </span>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <span className="text-sm text-gray-600">Evaluator: N/A</span>
+              </div>
+              <div>
+                <span className="text-sm text-gray-600">
+                  Date: {assessment.scheduled_date || assessment.completed_date || 'N/A'}
+                </span>
+              </div>
+              {assessment.score && (
+                <div className="col-span-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium">Score: {assessment.score}%</span>
+                  </div>
+                </div>
+              )}
+            </div>
+            
+            {assessment.feedback && (
+              <div className="mt-4 p-3 bg-gray-50 rounded">
+                <p className="text-sm text-gray-700">{assessment.feedback}</p>
+              </div>
+            )}
           </div>
-        </>
-      )}
+        )) : (
+          <p className="text-gray-500">No assessments found</p>
+        )}
+      </div>
 
       {isManager && (
         <div className="bg-white rounded-lg shadow">
@@ -163,16 +154,16 @@ export default function AssessmentsPage() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {teamAssessments.map((assessment) => (
+                  {teamAssessments.length > 0 ? teamAssessments.map((assessment) => (
                     <tr key={assessment.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {assessment.employee}
+                        N/A
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {assessment.title}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {assessment.dueDate}
+                        {assessment.scheduled_date || 'Not scheduled'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(assessment.status)}`}>
@@ -187,7 +178,13 @@ export default function AssessmentsPage() {
                         )}
                       </td>
                     </tr>
-                  ))}
+                  )) : (
+                    <tr>
+                      <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
+                        No team assessments found
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>

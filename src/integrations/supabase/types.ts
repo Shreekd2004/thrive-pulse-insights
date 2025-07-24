@@ -14,6 +14,54 @@ export type Database = {
   }
   public: {
     Tables: {
+      assessments: {
+        Row: {
+          completed_date: string | null
+          created_at: string
+          description: string | null
+          employee_id: string
+          evaluator_id: string
+          feedback: string | null
+          id: string
+          scheduled_date: string | null
+          score: number | null
+          status: string
+          title: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          completed_date?: string | null
+          created_at?: string
+          description?: string | null
+          employee_id: string
+          evaluator_id: string
+          feedback?: string | null
+          id?: string
+          scheduled_date?: string | null
+          score?: number | null
+          status?: string
+          title: string
+          type?: string
+          updated_at?: string
+        }
+        Update: {
+          completed_date?: string | null
+          created_at?: string
+          description?: string | null
+          employee_id?: string
+          evaluator_id?: string
+          feedback?: string | null
+          id?: string
+          scheduled_date?: string | null
+          score?: number | null
+          status?: string
+          title?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       departments: {
         Row: {
           created_at: string

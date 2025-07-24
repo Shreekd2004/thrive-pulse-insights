@@ -1,8 +1,42 @@
 
 import { Target, Users, Award, Bell } from "lucide-react";
 import StatCard from "@/components/dashboard/StatCard";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function ManagerDashboard() {
+  const { profile } = useAuth();
+
+  const { data: teamMembers = [] } = useQuery({
+    queryKey: ['team-members-dashboard'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('employees')
+        .select('*')
+        .eq('manager_id', profile?.id);
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!profile?.id,
+  });
+
+  const { data: goals = [] } = useQuery({
+    queryKey: ['manager-goals-dashboard'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('goals')
+        .select('*')
+        .eq('status', 'active');
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  const averagePerformance = teamMembers.length > 0 
+    ? Math.round(teamMembers.reduce((sum, member) => sum + (member.performance || 0), 0) / teamMembers.length)
+    : 0;
+
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">Manager Dashboard</h1>
@@ -10,19 +44,19 @@ export default function ManagerDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <StatCard
           title="Team Members"
-          value={8}
+          value={teamMembers.length}
           icon={<Users size={24} className="text-white" />}
           color="teal"
         />
         <StatCard
           title="Active Goals"
-          value={12}
+          value={goals.length}
           icon={<Target size={24} className="text-white" />}
           color="gold"
         />
         <StatCard
           title="Team Performance"
-          value="87%"
+          value={`${averagePerformance}%`}
           icon={<Award size={24} className="text-white" />}
           color="green"
         />
@@ -32,15 +66,10 @@ export default function ManagerDashboard() {
         <div className="bg-white p-6 rounded-md shadow-sm">
           <h2 className="text-xl font-semibold mb-4">Team Goals Progress</h2>
           <div className="space-y-4">
-            {[
-              { name: "Q2 Sales Target", progress: 75 },
-              { name: "Customer Satisfaction", progress: 88 },
-              { name: "Product Development", progress: 45 },
-              { name: "Team Training", progress: 60 },
-            ].map((goal, i) => (
-              <div key={i} className="space-y-1">
+            {goals.length > 0 ? goals.slice(0, 4).map((goal) => (
+              <div key={goal.id} className="space-y-1">
                 <div className="flex justify-between">
-                  <span>{goal.name}</span>
+                  <span>{goal.title}</span>
                   <span className="font-medium">{goal.progress}%</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
@@ -50,7 +79,9 @@ export default function ManagerDashboard() {
                   ></div>
                 </div>
               </div>
-            ))}
+            )) : (
+              <p className="text-gray-500">No active goals found</p>
+            )}
           </div>
         </div>
 
@@ -89,36 +120,42 @@ export default function ManagerDashboard() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {[
-                { name: "John Smith", position: "Senior Developer", performance: "High", goals: "4/5", risk: "Low" },
-                { name: "Sarah Wilson", position: "UI Designer", performance: "Medium", goals: "3/4", risk: "Medium" },
-                { name: "Michael Brown", position: "Backend Developer", performance: "High", goals: "5/5", risk: "Low" },
-                { name: "Emma Davis", position: "Product Manager", performance: "Medium", goals: "2/3", risk: "Low" },
-              ].map((employee, i) => (
-                <tr key={i}>
-                  <td className="px-6 py-4 whitespace-nowrap">{employee.name}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{employee.position}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 py-1 text-xs rounded-full ${
-                      employee.performance === "High" ? "bg-green-100 text-green-800" : 
-                      employee.performance === "Medium" ? "bg-yellow-100 text-yellow-800" : 
-                      "bg-red-100 text-red-800"
-                    }`}>
-                      {employee.performance}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">{employee.goals}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 py-1 text-xs rounded-full ${
-                      employee.risk === "Low" ? "bg-green-100 text-green-800" : 
-                      employee.risk === "Medium" ? "bg-yellow-100 text-yellow-800" : 
-                      "bg-red-100 text-red-800"
-                    }`}>
-                      {employee.risk}
-                    </span>
+              {teamMembers.length > 0 ? teamMembers.map((employee) => {
+                const performanceLevel = employee.performance >= 80 ? "High" : employee.performance >= 60 ? "Medium" : "Low";
+                const risk = employee.performance >= 75 ? "Low" : employee.performance >= 50 ? "Medium" : "High";
+                
+                return (
+                  <tr key={employee.id}>
+                    <td className="px-6 py-4 whitespace-nowrap">{employee.name}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">{employee.role}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`px-2 py-1 text-xs rounded-full ${
+                        performanceLevel === "High" ? "bg-green-100 text-green-800" : 
+                        performanceLevel === "Medium" ? "bg-yellow-100 text-yellow-800" : 
+                        "bg-red-100 text-red-800"
+                      }`}>
+                        {performanceLevel}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">{employee.performance}%</td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`px-2 py-1 text-xs rounded-full ${
+                        risk === "Low" ? "bg-green-100 text-green-800" : 
+                        risk === "Medium" ? "bg-yellow-100 text-yellow-800" : 
+                        "bg-red-100 text-red-800"
+                      }`}>
+                        {risk}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              }) : (
+                <tr>
+                  <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
+                    No team members found
                   </td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>

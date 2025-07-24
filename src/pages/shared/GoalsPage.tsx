@@ -7,6 +7,8 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import AddGoalForm from "@/components/forms/AddGoalForm";
+import UpdateProgressButton from "@/components/goals/UpdateProgressButton";
+import ViewDetailsButton from "@/components/goals/ViewDetailsButton";
 
 export default function GoalsPage() {
   const { profile } = useAuth();
@@ -120,12 +122,12 @@ export default function GoalsPage() {
             
             <div className="mt-4 flex gap-2">
               {profile?.role === "employee" && goal.status === "active" && (
-                <Button variant="outline" size="sm">Update Progress</Button>
+                <UpdateProgressButton goalId={goal.id} currentProgress={goal.progress} onSuccess={refetch} />
               )}
               {isHR && (
                 <Button variant="outline" size="sm">Edit Goal</Button>
               )}
-              <Button variant="outline" size="sm">View Details</Button>
+              <ViewDetailsButton goal={goal} />
             </div>
           </div>
         ))}

@@ -101,7 +101,7 @@ const navItems: NavItem[] = [
     title: "Assessments",
     path: "/assessments",
     icon: <FileText className="h-5 w-5" />,
-    roles: ["manager", "employee"],
+    roles: ["hr", "manager", "employee"],
   },
   {
     title: "Notifications",
