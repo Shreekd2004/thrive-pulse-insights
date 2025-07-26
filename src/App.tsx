@@ -56,6 +56,7 @@ const App = () => (
             <Route path="/hr/feedback" element={<AppLayout allowedRoles={["hr"]}><FeedbackPage /></AppLayout>} />
             <Route path="/hr/salary" element={<AppLayout allowedRoles={["hr"]}><SalaryPage /></AppLayout>} />
             <Route path="/hr/users" element={<AppLayout allowedRoles={["hr"]}><UsersPage /></AppLayout>} />
+            <Route path="/hr/assessments" element={<AppLayout allowedRoles={["hr"]}><AssessmentsPage /></AppLayout>} />
             <Route path="/hr/team-performance" element={<AppLayout allowedRoles={["hr"]}><TeamPerformancePage /></AppLayout>} />
             <Route path="/hr/notifications" element={<AppLayout allowedRoles={["hr"]}><NotificationsPage /></AppLayout>} />
             <Route path="/hr/settings" element={<AppLayout allowedRoles={["hr"]}><SettingsPage /></AppLayout>} />
