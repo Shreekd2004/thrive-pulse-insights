@@ -18,11 +18,31 @@ export default function EmployeesPage() {
         .from('employees')
         .select(`
           *,
-          department:departments(name),
-          manager:employees!employees_manager_id_fkey(name)
+          department:departments(name)
         `);
       if (error) throw error;
-      return data;
+      
+      // If we have employees, fetch manager names separately
+      if (data && data.length > 0) {
+        const employeeIds = data.map(emp => emp.manager_id).filter(Boolean);
+        let managers: any[] = [];
+        
+        if (employeeIds.length > 0) {
+          const { data: managersData } = await supabase
+            .from('employees')
+            .select('id, name')
+            .in('id', employeeIds);
+          managers = managersData || [];
+        }
+        
+        // Map manager names to ALL employees (with null if no manager)
+        return data.map(emp => ({
+          ...emp,
+          manager: managers.find(mgr => mgr.id === emp.manager_id) || null
+        }));
+      }
+      
+      return data?.map(emp => ({ ...emp, manager: null })) || [];
     },
   });
 
