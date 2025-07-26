@@ -44,10 +44,39 @@ export default function CreateUserForm({ onSuccess }: CreateUserFormProps) {
       }
 
       // The profile will be created automatically via the database trigger
+      if (authData?.user) {
+        // Wait a moment for the profile to be created by the trigger
+        await new Promise(resolve => setTimeout(resolve, 1500));
+
+        // Get the created profile to get the profile ID
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('user_id', authData.user.id)
+          .single();
+
+        // Create corresponding employee record
+        if (profile) {
+          const { error: employeeError } = await supabase
+            .from('employees')
+            .insert([{
+              name: formData.fullName,
+              email: formData.email,
+              role: formData.role,
+              profile_id: profile.id,
+              user_id: authData.user.id,
+            }]);
+
+          if (employeeError) {
+            console.error('Error creating employee record:', employeeError);
+            // Don't throw here - user was created successfully
+          }
+        }
+      }
 
       toast({
         title: "Success!",
-        description: `User ${formData.fullName} has been created successfully.`,
+        description: `User ${formData.fullName} has been created successfully and added to employee list.`,
       });
 
       // Reset form
