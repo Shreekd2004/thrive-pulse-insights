@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { User as SupabaseUser, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { auditService } from '@/services/auditService';
 
 export type UserRole = "hr" | "manager" | "employee";
 
@@ -147,6 +148,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           title: "Welcome back!",
           description: "You have successfully signed in.",
         });
+        
+        // Log successful login
+        setTimeout(() => auditService.logUserLogin(), 1000);
       }
 
       return { error };
@@ -162,6 +166,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = async () => {
     try {
+      // Log logout before signing out
+      await auditService.logUserLogout();
+      
       await supabase.auth.signOut();
       setUser(null);
       setSession(null);

@@ -8,6 +8,33 @@ import { supabase } from "@/integrations/supabase/client";
 export default function EmployeeDashboard() {
   const { profile } = useAuth();
 
+  const { data: myRecognitions = [] } = useQuery({
+    queryKey: ['my-recognitions-dashboard'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('recognition')
+        .select('*')
+        .eq('to_user', profile?.id);
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!profile?.id,
+  });
+
+  const { data: upcomingOneOnOnes = [] } = useQuery({
+    queryKey: ['upcoming-one-on-ones-dashboard'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('one_on_ones')
+        .select('*')
+        .eq('employee_id', profile?.id)
+        .gte('scheduled_date', new Date().toISOString());
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!profile?.id,
+  });
+
   const { data: goals = [] } = useQuery({
     queryKey: ['employee-goals-dashboard'],
     queryFn: async () => {
@@ -53,7 +80,10 @@ export default function EmployeeDashboard() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Employee Dashboard</h1>
+      <div>
+        <h1 className="text-2xl font-bold">Employee Dashboard</h1>
+        <p className="text-gray-600">Your personal performance hub and goal tracking</p>
+      </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <StatCard
@@ -73,6 +103,18 @@ export default function EmployeeDashboard() {
           value={recentFeedback.length}
           icon={<MessageSquare size={24} className="text-white" />}
           color="green"
+        />
+        <StatCard
+          title="Recognition Received"
+          value={myRecognitions.length}
+          icon={<Award size={24} className="text-white" />}
+          color="gold"
+        />
+        <StatCard
+          title="Upcoming 1:1s"
+          value={upcomingOneOnOnes.length}
+          icon={<Calendar size={24} className="text-white" />}
+          color="teal"
         />
       </div>
 

@@ -7,6 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
+import { auditService } from "@/services/auditService";
+import { notificationService } from "@/services/notificationService";
 
 interface AddFeedbackFormProps {
   onClose: () => void;
@@ -61,6 +63,19 @@ export default function AddFeedbackForm({ onClose, onSuccess }: AddFeedbackFormP
 
       if (error) throw error;
       
+      // Log audit trail
+      await auditService.logFeedbackGiven('new-feedback', {
+        to_user: formData.to_user,
+        category: formData.category,
+        rating: formData.rating,
+      });
+
+      // Send notification to recipient
+      await notificationService.createFeedbackNotification(
+        formData.to_user,
+        profile?.full_name || 'Someone'
+      );
+
       onSuccess();
       onClose();
     } catch (error) {

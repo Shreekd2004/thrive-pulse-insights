@@ -8,6 +8,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
+import { auditService } from "@/services/auditService";
+import { notificationService } from "@/services/notificationService";
 
 interface AddGoalFormProps {
   onClose: () => void;
@@ -61,6 +63,24 @@ export default function AddGoalForm({ onClose, onSuccess }: AddGoalFormProps) {
 
       if (error) throw error;
       
+      // Log audit trail
+      await auditService.logGoalCreated('new-goal', {
+        title: formData.title,
+        assigned_to: formData.assigned_to,
+        created_by: profile?.id,
+      });
+
+      // Send notification to assigned user
+      if (formData.assigned_to !== profile?.id) {
+        await notificationService.createNotification({
+          user_id: formData.assigned_to,
+          title: "New Goal Assigned",
+          message: `You have been assigned a new goal: "${formData.title}"`,
+          type: 'info',
+          category: 'goals',
+        });
+      }
+
       onSuccess();
       onClose();
     } catch (error) {

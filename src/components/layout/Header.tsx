@@ -33,9 +33,12 @@ export default function Header() {
   return (
     <header className="bg-primary h-16 px-6 flex items-center justify-between shadow-md">
       <div>
-        <h2 className="text-white text-lg">
-          Welcome, {profile.full_name}
-        </h2>
+        <div className="flex items-center gap-3">
+          <div className="text-white">
+            <h1 className="text-xl font-bold">Thrive Pulse Insights</h1>
+            <p className="text-sm opacity-90">Welcome, {profile.full_name}</p>
+          </div>
+        </div>
       </div>
 
       <div className="flex items-center gap-4">

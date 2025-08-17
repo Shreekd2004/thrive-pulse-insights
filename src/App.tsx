@@ -29,6 +29,10 @@ import {
   SettingsPage,
   NotFoundPage
 } from "@/pages";
+import ReviewsPage from "@/pages/shared/ReviewsPage";
+import OneOnOnesPage from "@/pages/shared/OneOnOnesPage";
+import RecognitionPage from "@/pages/shared/RecognitionPage";
+import AnalyticsPage from "@/pages/analytics/AnalyticsPage";
 import Index from "@/pages/Index";
 
 const queryClient = new QueryClient();
@@ -58,6 +62,10 @@ const App = () => (
             <Route path="/hr/users" element={<AppLayout allowedRoles={["hr"]}><UsersPage /></AppLayout>} />
             <Route path="/hr/assessments" element={<AppLayout allowedRoles={["hr"]}><AssessmentsPage /></AppLayout>} />
             <Route path="/hr/team-performance" element={<AppLayout allowedRoles={["hr"]}><TeamPerformancePage /></AppLayout>} />
+            <Route path="/hr/reviews" element={<AppLayout allowedRoles={["hr"]}><ReviewsPage /></AppLayout>} />
+            <Route path="/hr/one-on-ones" element={<AppLayout allowedRoles={["hr"]}><OneOnOnesPage /></AppLayout>} />
+            <Route path="/hr/recognition" element={<AppLayout allowedRoles={["hr"]}><RecognitionPage /></AppLayout>} />
+            <Route path="/hr/analytics" element={<AppLayout allowedRoles={["hr"]}><AnalyticsPage /></AppLayout>} />
             <Route path="/hr/notifications" element={<AppLayout allowedRoles={["hr"]}><NotificationsPage /></AppLayout>} />
             <Route path="/hr/settings" element={<AppLayout allowedRoles={["hr"]}><SettingsPage /></AppLayout>} />
             
@@ -69,6 +77,9 @@ const App = () => (
             <Route path="/manager/my-performance" element={<AppLayout allowedRoles={["manager"]}><MyPerformancePage /></AppLayout>} />
             <Route path="/manager/leave-request" element={<AppLayout allowedRoles={["manager"]}><LeaveRequestPage /></AppLayout>} />
             <Route path="/manager/assessments" element={<AppLayout allowedRoles={["manager"]}><AssessmentsPage /></AppLayout>} />
+            <Route path="/manager/reviews" element={<AppLayout allowedRoles={["manager"]}><ReviewsPage /></AppLayout>} />
+            <Route path="/manager/one-on-ones" element={<AppLayout allowedRoles={["manager"]}><OneOnOnesPage /></AppLayout>} />
+            <Route path="/manager/recognition" element={<AppLayout allowedRoles={["manager"]}><RecognitionPage /></AppLayout>} />
             <Route path="/manager/notifications" element={<AppLayout allowedRoles={["manager"]}><NotificationsPage /></AppLayout>} />
             <Route path="/manager/settings" element={<AppLayout allowedRoles={["manager"]}><SettingsPage /></AppLayout>} />
             
@@ -79,6 +90,9 @@ const App = () => (
             <Route path="/employee/my-performance" element={<AppLayout allowedRoles={["employee"]}><MyPerformancePage /></AppLayout>} />
             <Route path="/employee/leave-request" element={<AppLayout allowedRoles={["employee"]}><LeaveRequestPage /></AppLayout>} />
             <Route path="/employee/assessments" element={<AppLayout allowedRoles={["employee"]}><AssessmentsPage /></AppLayout>} />
+            <Route path="/employee/reviews" element={<AppLayout allowedRoles={["employee"]}><ReviewsPage /></AppLayout>} />
+            <Route path="/employee/one-on-ones" element={<AppLayout allowedRoles={["employee"]}><OneOnOnesPage /></AppLayout>} />
+            <Route path="/employee/recognition" element={<AppLayout allowedRoles={["employee"]}><RecognitionPage /></AppLayout>} />
             <Route path="/employee/notifications" element={<AppLayout allowedRoles={["employee"]}><NotificationsPage /></AppLayout>} />
             <Route path="/employee/settings" element={<AppLayout allowedRoles={["employee"]}><SettingsPage /></AppLayout>} />
             

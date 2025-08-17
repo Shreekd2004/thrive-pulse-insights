@@ -60,9 +60,9 @@ export default function LoginPage() {
       <div className="w-full max-w-md p-4">
         <Card className="shadow-lg">
           <CardHeader className="space-y-2 text-center">
-            <CardTitle className="text-2xl font-bold">Employee Performance Management</CardTitle>
+            <CardTitle className="text-2xl font-bold">Thrive Pulse Insights</CardTitle>
             <CardDescription>
-              {isSignUp ? "Create your account" : "Sign in to access your dashboard"}
+              {isSignUp ? "Join your organization" : "Sign in to access your performance dashboard"}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">

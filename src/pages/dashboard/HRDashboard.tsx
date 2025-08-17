@@ -1,10 +1,27 @@
-
 import { Users, Building, DollarSign, FileText, CheckCircle, Clock, XCircle } from "lucide-react";
 import StatCard from "@/components/dashboard/StatCard";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
 export default function HRDashboard() {
+  const { data: reviewCycles = [] } = useQuery({
+    queryKey: ['review-cycles-dashboard'],
+    queryFn: async () => {
+      const { data, error } = await supabase.from('review_cycles').select('*').eq('status', 'active');
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  const { data: recognitions = [] } = useQuery({
+    queryKey: ['recognitions-dashboard'],
+    queryFn: async () => {
+      const { data, error } = await supabase.from('recognition').select('*');
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
   const { data: employees = [] } = useQuery({
     queryKey: ['employees-dashboard'],
     queryFn: async () => {
@@ -49,7 +66,10 @@ export default function HRDashboard() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Dashboard Overview</h1>
+      <div>
+        <h1 className="text-2xl font-bold">HR Dashboard</h1>
+        <p className="text-gray-600">Organization-wide performance insights and management</p>
+      </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <StatCard
@@ -69,6 +89,18 @@ export default function HRDashboard() {
           value={`$${totalPayroll.toLocaleString()}`}
           icon={<DollarSign size={24} className="text-white" />}
           color="red"
+        />
+        <StatCard
+          title="Active Review Cycles"
+          value={reviewCycles.length}
+          icon={<FileText size={24} className="text-white" />}
+          color="teal"
+        />
+        <StatCard
+          title="Recognition Given"
+          value={recognitions.length}
+          icon={<Award size={24} className="text-white" />}
+          color="gold"
         />
       </div>
 

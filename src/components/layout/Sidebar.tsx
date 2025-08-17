@@ -14,7 +14,10 @@ import {
   MessageSquare,
   DollarSign,
   Bell,
-  LogOut
+  LogOut,
+  TrendingUp,
+  Heart,
+  UserCheck
 } from "lucide-react";
 
 interface NavItem {
@@ -104,6 +107,30 @@ const navItems: NavItem[] = [
     roles: ["hr", "manager", "employee"],
   },
   {
+    title: "Reviews",
+    path: "/reviews",
+    icon: <UserCheck className="h-5 w-5" />,
+    roles: ["hr", "manager", "employee"],
+  },
+  {
+    title: "1:1 Meetings",
+    path: "/one-on-ones",
+    icon: <Calendar className="h-5 w-5" />,
+    roles: ["hr", "manager", "employee"],
+  },
+  {
+    title: "Recognition",
+    path: "/recognition",
+    icon: <Heart className="h-5 w-5" />,
+    roles: ["hr", "manager", "employee"],
+  },
+  {
+    title: "Analytics",
+    path: "/analytics",
+    icon: <TrendingUp className="h-5 w-5" />,
+    roles: ["hr"],
+  },
+  {
     title: "Notifications",
     path: "/notifications",
     icon: <Bell className="h-5 w-5" />,
@@ -139,7 +166,10 @@ export default function Sidebar() {
   return (
     <div className="h-full w-64 bg-sidebar flex flex-col">
       <div className="p-4 border-b border-sidebar-border">
-        <h1 className="text-xl font-bold text-white italic">Employee MS</h1>
+        <div className="text-white">
+          <h1 className="text-lg font-bold">Thrive Pulse</h1>
+          <p className="text-xs opacity-75">Insights</p>
+        </div>
       </div>
       
       <div className="flex-1 overflow-auto py-4 space-y-1 px-2">

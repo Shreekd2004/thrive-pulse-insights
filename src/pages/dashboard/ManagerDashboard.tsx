@@ -8,6 +8,32 @@ import { useAuth } from "@/contexts/AuthContext";
 export default function ManagerDashboard() {
   const { profile } = useAuth();
 
+  const { data: oneOnOnes = [] } = useQuery({
+    queryKey: ['one-on-ones-dashboard'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('one_on_ones')
+        .select('*')
+        .eq('manager_id', profile?.id);
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!profile?.id,
+  });
+
+  const { data: teamFeedback = [] } = useQuery({
+    queryKey: ['team-feedback-dashboard'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('feedback')
+        .select('*')
+        .eq('from_user', profile?.id);
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!profile?.id,
+  });
+
   const { data: teamMembers = [] } = useQuery({
     queryKey: ['team-members-dashboard'],
     queryFn: async () => {
@@ -39,7 +65,10 @@ export default function ManagerDashboard() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Manager Dashboard</h1>
+      <div>
+        <h1 className="text-2xl font-bold">Manager Dashboard</h1>
+        <p className="text-gray-600">Team performance overview and management tools</p>
+      </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <StatCard
@@ -59,6 +88,18 @@ export default function ManagerDashboard() {
           value={`${averagePerformance}%`}
           icon={<Award size={24} className="text-white" />}
           color="green"
+        />
+        <StatCard
+          title="Upcoming 1:1s"
+          value={oneOnOnes.filter(m => new Date(m.scheduled_date) > new Date()).length}
+          icon={<Calendar size={24} className="text-white" />}
+          color="teal"
+        />
+        <StatCard
+          title="Feedback Given"
+          value={teamFeedback.length}
+          icon={<MessageSquare size={24} className="text-white" />}
+          color="gold"
         />
       </div>
 
