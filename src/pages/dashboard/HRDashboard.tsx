@@ -14,6 +14,15 @@ export default function HRDashboard() {
     },
   });
 
+  const { data: salaries = [] } = useQuery({
+    queryKey: ['salaries-dashboard'],
+    queryFn: async () => {
+      const { data, error } = await supabase.from('salaries').select('salary');
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
   const { data: departments = [] } = useQuery({
     queryKey: ['departments-dashboard'],
     queryFn: async () => {
@@ -32,7 +41,7 @@ export default function HRDashboard() {
     },
   });
 
-  const totalPayroll = employees.reduce((sum, emp) => sum + (emp.salary || 0), 0);
+  const totalPayroll = salaries.reduce((sum, sal) => sum + (sal.salary || 0), 0);
   const leaveApplied = leaveRequests.length;
   const leaveApproved = leaveRequests.filter(req => req.status === 'approved').length;
   const leavePending = leaveRequests.filter(req => req.status === 'pending').length;

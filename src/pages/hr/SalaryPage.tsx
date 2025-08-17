@@ -10,35 +10,76 @@ export default function SalaryPage() {
   const [editingEmployee, setEditingEmployee] = useState<string | null>(null);
   const [newSalary, setNewSalary] = useState<string>("");
 
-  const { data: employees = [], refetch } = useQuery({
+  const { data: employeesWithSalaries = [], refetch } = useQuery({
     queryKey: ['employees-salary'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // First get employees
+      const { data: employees, error: empError } = await supabase
         .from('employees')
         .select(`
           id,
           name,
           role,
-          salary,
           hire_date,
           departments!inner(name)
         `);
-      if (error) throw error;
-      return data || [];
+      
+      if (empError) throw empError;
+      
+      // Then get salaries separately
+      const { data: salaries, error: salError } = await supabase
+        .from('salaries')
+        .select('employee_id, salary, effective_date');
+        
+      if (salError) throw salError;
+      
+      // Combine the data
+      const employeesWithSalaryData = employees?.map(emp => {
+        const salary = salaries?.find(s => s.employee_id === emp.id);
+        return {
+          ...emp,
+          salary: salary?.salary || null,
+          effective_date: salary?.effective_date || null
+        };
+      }) || [];
+      
+      return employeesWithSalaryData;
     },
   });
 
-  const totalPayroll = employees.reduce((sum, emp) => sum + (emp.salary || 0), 0);
-  const avgSalary = employees.length > 0 ? totalPayroll / employees.length : 0;
+  const totalPayroll = employeesWithSalaries.reduce((sum, emp) => sum + (emp.salary || 0), 0);
+  const avgSalary = employeesWithSalaries.length > 0 ? totalPayroll / employeesWithSalaries.length : 0;
 
   const handleSalaryUpdate = async (employeeId: string) => {
     try {
-      const { error } = await supabase
-        .from('employees')
-        .update({ salary: parseFloat(newSalary) })
-        .eq('id', employeeId);
+      // First, check if salary record exists
+      const { data: existingSalary } = await supabase
+        .from('salaries')
+        .select('id')
+        .eq('employee_id', employeeId)
+        .single();
 
-      if (error) throw error;
+      if (existingSalary) {
+        // Update existing salary
+        const { error } = await supabase
+          .from('salaries')
+          .update({ 
+            salary: parseFloat(newSalary),
+            effective_date: new Date().toISOString().split('T')[0]
+          })
+          .eq('employee_id', employeeId);
+        if (error) throw error;
+      } else {
+        // Insert new salary record
+        const { error } = await supabase
+          .from('salaries')
+          .insert({ 
+            employee_id: employeeId,
+            salary: parseFloat(newSalary),
+            effective_date: new Date().toISOString().split('T')[0]
+          });
+        if (error) throw error;
+      }
       
       setEditingEmployee(null);
       setNewSalary("");
@@ -82,7 +123,7 @@ export default function SalaryPage() {
             <DollarSign className="h-8 w-8 text-purple-600" />
             <div className="ml-3">
               <p className="text-sm text-gray-600">Employees</p>
-              <p className="text-2xl font-semibold">{employees.length}</p>
+              <p className="text-2xl font-semibold">{employeesWithSalaries.length}</p>
             </div>
           </div>
         </div>
@@ -110,7 +151,7 @@ export default function SalaryPage() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {employees.length > 0 ? employees.map((emp) => (
+              {employeesWithSalaries.length > 0 ? employeesWithSalaries.map((emp) => (
                 <tr key={emp.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">

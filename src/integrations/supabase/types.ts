@@ -98,7 +98,6 @@ export type Database = {
           performance: number | null
           profile_id: string | null
           role: string
-          salary: number | null
           status: string | null
           updated_at: string
           user_id: string | null
@@ -114,7 +113,6 @@ export type Database = {
           performance?: number | null
           profile_id?: string | null
           role: string
-          salary?: number | null
           status?: string | null
           updated_at?: string
           user_id?: string | null
@@ -130,7 +128,6 @@ export type Database = {
           performance?: number | null
           profile_id?: string | null
           role?: string
-          salary?: number | null
           status?: string | null
           updated_at?: string
           user_id?: string | null
@@ -365,6 +362,44 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      salaries: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          effective_date: string
+          employee_id: string
+          id: string
+          salary: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          effective_date?: string
+          employee_id: string
+          id?: string
+          salary?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          effective_date?: string
+          employee_id?: string
+          id?: string
+          salary?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "salaries_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
