@@ -333,6 +333,84 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          action_url: string | null
+          category: string | null
+          created_at: string
+          id: string
+          is_read: boolean | null
+          message: string
+          title: string
+          type: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          action_url?: string | null
+          category?: string | null
+          created_at?: string
+          id?: string
+          is_read?: boolean | null
+          message: string
+          title: string
+          type?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          action_url?: string | null
+          category?: string | null
+          created_at?: string
+          id?: string
+          is_read?: boolean | null
+          message?: string
+          title?: string
+          type?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      one_on_ones: {
+        Row: {
+          agenda: string | null
+          created_at: string
+          duration_minutes: number | null
+          employee_id: string
+          id: string
+          manager_id: string
+          notes: string | null
+          scheduled_date: string
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          agenda?: string | null
+          created_at?: string
+          duration_minutes?: number | null
+          employee_id: string
+          id?: string
+          manager_id: string
+          notes?: string | null
+          scheduled_date: string
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          agenda?: string | null
+          created_at?: string
+          duration_minutes?: number | null
+          employee_id?: string
+          id?: string
+          manager_id?: string
+          notes?: string | null
+          scheduled_date?: string
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -360,6 +438,81 @@ export type Database = {
           role?: Database["public"]["Enums"]["app_role"]
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      recognition: {
+        Row: {
+          created_at: string
+          from_user: string
+          id: string
+          is_public: boolean | null
+          message: string
+          recognition_type: string | null
+          title: string
+          to_user: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          from_user: string
+          id?: string
+          is_public?: boolean | null
+          message: string
+          recognition_type?: string | null
+          title: string
+          to_user: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          from_user?: string
+          id?: string
+          is_public?: boolean | null
+          message?: string
+          recognition_type?: string | null
+          title?: string
+          to_user?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      review_cycles: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          end_date: string
+          id: string
+          name: string
+          review_type: string | null
+          start_date: string
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          end_date: string
+          id?: string
+          name: string
+          review_type?: string | null
+          start_date: string
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          end_date?: string
+          id?: string
+          name?: string
+          review_type?: string | null
+          start_date?: string
+          status?: string | null
+          updated_at?: string
         }
         Relationships: []
       }

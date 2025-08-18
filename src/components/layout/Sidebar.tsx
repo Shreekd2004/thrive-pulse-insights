@@ -91,7 +91,7 @@ const navItems: NavItem[] = [
   {
     title: "My Performance",
     path: "/my-performance",
-    icon: <Award className="h-5 w-5" />,
+    icon: <BarChart className="h-5 w-5" />,
     roles: ["manager", "employee"],
   },
   {
