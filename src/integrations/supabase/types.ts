@@ -411,6 +411,66 @@ export type Database = {
         }
         Relationships: []
       }
+      performance_reviews: {
+        Row: {
+          achievements: string | null
+          areas_of_improvement: string | null
+          comments: string | null
+          created_at: string
+          due_date: string | null
+          employee_id: string
+          goals_met: boolean | null
+          id: string
+          manager_rating: number | null
+          overall_rating: number | null
+          review_cycle_id: string | null
+          review_type: string | null
+          reviewer_id: string
+          self_rating: number | null
+          status: string | null
+          submitted_date: string | null
+          updated_at: string
+        }
+        Insert: {
+          achievements?: string | null
+          areas_of_improvement?: string | null
+          comments?: string | null
+          created_at?: string
+          due_date?: string | null
+          employee_id: string
+          goals_met?: boolean | null
+          id?: string
+          manager_rating?: number | null
+          overall_rating?: number | null
+          review_cycle_id?: string | null
+          review_type?: string | null
+          reviewer_id: string
+          self_rating?: number | null
+          status?: string | null
+          submitted_date?: string | null
+          updated_at?: string
+        }
+        Update: {
+          achievements?: string | null
+          areas_of_improvement?: string | null
+          comments?: string | null
+          created_at?: string
+          due_date?: string | null
+          employee_id?: string
+          goals_met?: boolean | null
+          id?: string
+          manager_rating?: number | null
+          overall_rating?: number | null
+          review_cycle_id?: string | null
+          review_type?: string | null
+          reviewer_id?: string
+          self_rating?: number | null
+          status?: string | null
+          submitted_date?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string

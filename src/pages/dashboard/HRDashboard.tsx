@@ -1,4 +1,4 @@
-import { Users, Building, DollarSign, FileText, CheckCircle, Clock, XCircle } from "lucide-react";
+import { Users, Building, DollarSign, FileText, CheckCircle, Clock, XCircle, Award } from "lucide-react";
 import StatCard from "@/components/dashboard/StatCard";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";

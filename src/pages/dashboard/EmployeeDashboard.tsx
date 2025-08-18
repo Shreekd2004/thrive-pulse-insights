@@ -1,5 +1,5 @@
 
-import { Target, Award, MessageSquare, Bell } from "lucide-react";
+import { Target, Award, MessageSquare, Bell, Calendar } from "lucide-react";
 import StatCard from "@/components/dashboard/StatCard";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
