@@ -16,42 +16,66 @@ export default function RecognitionPage() {
   const { data: recognitions = [], refetch } = useQuery({
     queryKey: ['recognitions'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data: recognitionData, error } = await supabase
         .from('recognition')
-        .select(`
-          *,
-          from_profile:profiles!recognition_from_user_fkey(full_name),
-          to_profile:profiles!recognition_to_user_fkey(full_name)
-        `)
+        .select('*')
         .eq('is_public', true)
         .order('created_at', { ascending: false });
+      
       if (error) throw error;
-      return data?.map(r => ({
+      if (!recognitionData) return [];
+
+      // Get profile names separately
+      const profileIds = [...new Set([
+        ...recognitionData.map(r => r.from_user),
+        ...recognitionData.map(r => r.to_user)
+      ])];
+
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, full_name')
+        .in('id', profileIds);
+
+      const profileMap = new Map(profiles?.map(p => [p.id, p.full_name]) || []);
+
+      return recognitionData.map(r => ({
         ...r,
-        from_user_name: r.from_profile?.full_name || 'Unknown',
-        to_user_name: r.to_profile?.full_name || 'Unknown',
-      })) || [];
+        from_user_name: profileMap.get(r.from_user) || 'Unknown',
+        to_user_name: profileMap.get(r.to_user) || 'Unknown',
+      }));
     },
   });
 
   const { data: myRecognitions = [] } = useQuery({
     queryKey: ['my-recognitions'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data: myRecognitionData, error } = await supabase
         .from('recognition')
-        .select(`
-          *,
-          from_profile:profiles!recognition_from_user_fkey(full_name),
-          to_profile:profiles!recognition_to_user_fkey(full_name)
-        `)
+        .select('*')
         .eq('to_user', profile?.id)
         .order('created_at', { ascending: false });
+      
       if (error) throw error;
-      return data?.map(r => ({
+      if (!myRecognitionData) return [];
+
+      // Get profile names separately
+      const profileIds = [...new Set([
+        ...myRecognitionData.map(r => r.from_user),
+        ...myRecognitionData.map(r => r.to_user)
+      ])];
+
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, full_name')
+        .in('id', profileIds);
+
+      const profileMap = new Map(profiles?.map(p => [p.id, p.full_name]) || []);
+
+      return myRecognitionData.map(r => ({
         ...r,
-        from_user_name: r.from_profile?.full_name || 'Unknown',
-        to_user_name: r.to_profile?.full_name || 'Unknown',
-      })) || [];
+        from_user_name: profileMap.get(r.from_user) || 'Unknown',
+        to_user_name: profileMap.get(r.to_user) || 'Unknown',
+      }));
     },
     enabled: !!profile?.id,
   });

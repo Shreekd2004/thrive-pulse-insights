@@ -30,7 +30,7 @@ export default function ReviewsPage() {
     queryKey: ['my-reviews'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('assessments')
+        .from('performance_reviews')
         .select('*')
         .or(`employee_id.eq.${profile?.id},reviewer_id.eq.${profile?.id}`);
       if (error) throw error;

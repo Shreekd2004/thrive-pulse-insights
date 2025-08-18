@@ -17,17 +17,33 @@ export default function OneOnOnesPage() {
   const { data: oneOnOnes = [], refetch } = useQuery({
     queryKey: ['one-on-ones'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data: meetings, error } = await supabase
         .from('one_on_ones')
-        .select(`
-          *,
-          employee:profiles!one_on_ones_employee_id_fkey(full_name),
-          manager:profiles!one_on_ones_manager_id_fkey(full_name)
-        `)
+        .select('*')
         .or(`employee_id.eq.${profile?.id},manager_id.eq.${profile?.id}`)
         .order('scheduled_date', { ascending: false });
+      
       if (error) throw error;
-      return data || [];
+      if (!meetings) return [];
+
+      // Get profile names separately
+      const profileIds = [...new Set([
+        ...meetings.map(m => m.employee_id),
+        ...meetings.map(m => m.manager_id)
+      ])];
+
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, full_name')
+        .in('id', profileIds);
+
+      const profileMap = new Map(profiles?.map(p => [p.id, p.full_name]) || []);
+
+      return meetings.map(meeting => ({
+        ...meeting,
+        employee_name: profileMap.get(meeting.employee_id) || 'Unknown',
+        manager_name: profileMap.get(meeting.manager_id) || 'Unknown'
+      }));
     },
     enabled: !!profile?.id,
   });
@@ -103,17 +119,17 @@ export default function OneOnOnesPage() {
         <TabsContent value="upcoming" className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {upcomingMeetings.map((meeting) => (
-              <OneOnOneCard
-                key={meeting.id}
-                meeting={{
-                  ...meeting,
-                  employee_name: meeting.employee?.full_name,
-                  manager_name: meeting.manager?.full_name,
-                }}
-                userRole={profile?.role || 'employee'}
-                onEdit={(id) => console.log('Edit meeting:', id)}
-                onView={(id) => console.log('View meeting:', id)}
-              />
+                <OneOnOneCard
+                  key={meeting.id}
+                  meeting={{
+                    ...meeting,
+                    employee_name: meeting.employee_name,
+                    manager_name: meeting.manager_name,
+                  }}
+                  userRole={profile?.role || 'employee'}
+                  onEdit={(id) => console.log('Edit meeting:', id)}
+                  onView={(id) => console.log('View meeting:', id)}
+                />
             ))}
           </div>
           {upcomingMeetings.length === 0 && (
@@ -133,7 +149,7 @@ export default function OneOnOnesPage() {
                 <div className="flex justify-between items-start mb-4">
                   <div>
                     <h3 className="font-semibold text-gray-900">
-                      1:1 with {profile?.role === 'manager' ? meeting.employee?.full_name : meeting.manager?.full_name}
+                      1:1 with {profile?.role === 'manager' ? meeting.employee_name : meeting.manager_name}
                     </h3>
                     <p className="text-sm text-gray-600">
                       {new Date(meeting.scheduled_date).toLocaleDateString()} • {meeting.duration_minutes} minutes
