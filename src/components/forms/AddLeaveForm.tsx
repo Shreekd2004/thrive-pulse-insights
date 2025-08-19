@@ -28,11 +28,21 @@ export default function AddLeaveForm({ onClose, onSuccess }: AddLeaveFormProps) 
 
   // Set employee_id automatically for employees
   useEffect(() => {
-    if (profile) {
-      if (profile.role === 'employee') {
-        // For employees, automatically set their own profile ID
-        setFormData(prev => ({ ...prev, employee_id: profile.id }));
-      }
+    if (profile && profile.role === 'employee') {
+      // Get the employee record for the current user
+      const fetchCurrentEmployee = async () => {
+        const { data, error } = await supabase
+          .from('employees')
+          .select('id')
+          .eq('profile_id', profile.id)
+          .single();
+        
+        if (data && !error) {
+          setFormData(prev => ({ ...prev, employee_id: data.id }));
+        }
+      };
+      
+      fetchCurrentEmployee();
     }
   }, [profile]);
 
