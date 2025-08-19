@@ -140,9 +140,9 @@ export default function ReviewsPage() {
                 <div className="flex justify-between items-start mb-4">
                   <div>
                     <h3 className="font-semibold text-gray-900">
-                      {review.review_type.charAt(0).toUpperCase() + review.review_type.slice(1)} Review
+                      {(review as any).review_type ? (review as any).review_type.charAt(0).toUpperCase() + (review as any).review_type.slice(1) : 'Performance'} Review
                     </h3>
-                    <p className="text-sm text-gray-600">Due: {review.due_date || 'No deadline'}</p>
+                    <p className="text-sm text-gray-600">Due: {(review as any).due_date || 'No deadline'}</p>
                   </div>
                   <span className={`px-2 py-1 text-xs rounded-full ${
                     review.status === 'completed' ? 'bg-green-100 text-green-800' :
@@ -154,10 +154,10 @@ export default function ReviewsPage() {
                   </span>
                 </div>
                 
-                {review.overall_rating && (
+                {(review as any).overall_rating && (
                   <div className="mb-4">
                     <span className="text-sm text-gray-600">Overall Rating: </span>
-                    <span className="font-medium">{review.overall_rating}/5</span>
+                    <span className="font-medium">{(review as any).overall_rating}/5</span>
                   </div>
                 )}
                 

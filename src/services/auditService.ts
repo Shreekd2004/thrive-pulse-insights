@@ -23,7 +23,7 @@ class AuditService {
       if (!profile) return;
 
       const { error } = await supabase
-        .from('audit_logs')
+        .from('audit_logs' as any)
         .insert([{
           user_id: profile.id,
           action: params.action,
