@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface AddLeaveFormProps {
   onClose: () => void;
@@ -15,6 +16,7 @@ interface AddLeaveFormProps {
 }
 
 export default function AddLeaveForm({ onClose, onSuccess }: AddLeaveFormProps) {
+  const { profile } = useAuth();
   const [formData, setFormData] = useState({
     employee_id: "",
     type: "",
@@ -23,6 +25,16 @@ export default function AddLeaveForm({ onClose, onSuccess }: AddLeaveFormProps) 
     reason: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Set employee_id automatically for employees
+  useEffect(() => {
+    if (profile) {
+      if (profile.role === 'employee') {
+        // For employees, automatically set their own profile ID
+        setFormData(prev => ({ ...prev, employee_id: profile.id }));
+      }
+    }
+  }, [profile]);
 
   const { data: employees = [] } = useQuery({
     queryKey: ['employees'],
@@ -33,6 +45,8 @@ export default function AddLeaveForm({ onClose, onSuccess }: AddLeaveFormProps) 
       if (error) throw error;
       return data || [];
     },
+    // Only fetch employees if user is HR (can select any employee)
+    enabled: profile?.role === 'hr'
   });
 
   const calculateDays = (startDate: string, endDate: string) => {
@@ -48,7 +62,7 @@ export default function AddLeaveForm({ onClose, onSuccess }: AddLeaveFormProps) 
     e.preventDefault();
     
     if (!formData.employee_id) {
-      alert('Please select an employee');
+      alert('Employee information is missing');
       return;
     }
     
@@ -92,27 +106,42 @@ export default function AddLeaveForm({ onClose, onSuccess }: AddLeaveFormProps) 
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label htmlFor="employee">Employee</Label>
-            <Select onValueChange={(value) => setFormData(prev => ({ ...prev, employee_id: value }))}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select employee" />
-              </SelectTrigger>
-              <SelectContent>
-                {employees.length > 0 ? (
-                  employees.map((employee) => (
-                    <SelectItem key={employee.id} value={employee.id}>
-                      {employee.name}
+          {/* Only show employee dropdown for HR users */}
+          {profile?.role === 'hr' && (
+            <div>
+              <Label htmlFor="employee">Employee</Label>
+              <Select onValueChange={(value) => setFormData(prev => ({ ...prev, employee_id: value }))}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select employee" />
+                </SelectTrigger>
+                <SelectContent>
+                  {employees.length > 0 ? (
+                    employees.map((employee) => (
+                      <SelectItem key={employee.id} value={employee.id}>
+                        {employee.name}
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <SelectItem value="no-employees" disabled>
+                      No employees available
                     </SelectItem>
-                  ))
-                ) : (
-                  <SelectItem value="no-employees" disabled>
-                    No employees available
-                  </SelectItem>
-                )}
-              </SelectContent>
-            </Select>
-          </div>
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+          
+          {/* Show employee name for non-HR users */}
+          {profile?.role !== 'hr' && (
+            <div>
+              <Label>Employee</Label>
+              <Input 
+                value={profile?.full_name || ''} 
+                disabled 
+                className="bg-muted"
+              />
+            </div>
+          )}
           
           <div>
             <Label htmlFor="type">Leave Type</Label>
